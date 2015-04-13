@@ -1,0 +1,32 @@
+#!/bin/bash
+cat <<EOF > /etc/fluent/fluent.conf
+<source>
+  type tail
+  path /var/lib/docker/containers/*/*-json.log
+  pos_file /var/log/fluentd-docker.pos
+  time_format %Y-%m-%dT%H:%M:%S 
+  tag docker.*
+  format json
+</source>
+
+<match docker.var.lib.docker.containers.*.*.log>
+  type docker_metrics
+  stats_interval 1m
+  tag docker.all
+  cgroup_path /tmp/cgroup
+</match>
+
+<match docker.all>
+  type elasticsearch
+  log_level info
+  host ${ELASTICSEARCH_HOST}
+  port ${ELASTICSEARCH_PORT}
+  include_tag_key true 
+  logstash_format true
+  flush_intercal 5s
+</match>
+EOF
+
+cat /etc/fluent/fluent.conf
+
+/usr/local/bin/fluentd -c /etc/fluent/fluent.conf
