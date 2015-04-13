@@ -1,0 +1,27 @@
+#!/bin/bash
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source ${DIR}/params
+
+#boot disk from minion snapshot
+gcloud compute disks create --size=10GB --source-snapshot salt-minion --zone=$ZONE ${MINION}
+
+#attach persistent disk for docker
+gcloud compute disks create --size=${DISK_SIZE} --source-snapshot docker-pd --zone=$ZONE $DISK_NAME
+
+#prepare startup-script
+touch ${DIR}/tmp-script
+echo "#!/bin/bash" >> ${DIR}/tmp-script
+cat ${DIR}/params >> ${DIR}/tmp-script
+cat ${DIR}/startup-script >> ${DIR}/tmp-script
+
+#create minion
+gcloud compute instances create ${MINION} \
+--disk name=${DISK_NAME} \
+--disk name=${MINION} boot=yes auto-delete=yes \
+--machine-type n1-standard-1 \
+--maintenance-policy MIGRATE \
+--network default \
+--zone ${ZONE} \
+--metadata-from-file startup-script=${DIR}/tmp-script
+
+rm ${DIR}/tmp-script

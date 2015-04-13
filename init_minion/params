@@ -1,0 +1,7 @@
+MINION=salt-minion-4
+SUFFIX=docker
+DISK_NAME=${MINION}-${SUFFIX}
+MASTER=salt-master
+MASTER_IP=10.240.202.249
+DISK_SIZE=500GB
+ZONE=asia-east1-b

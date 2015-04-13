@@ -1,0 +1,24 @@
+cat <<EOF > /etc/salt/minion
+master: ${MASTER_IP} 
+id: ${MINION}
+EOF
+
+salt-minion -d
+
+TIMEOUT=90
+COUNT=0
+
+#https://github.com/saltstack/salt/issues/2978
+while [ ! -f /etc/salt/pki/minion/minion_master.pub ]; do
+    echo "waiting for pub key generation"
+    if [ "$COUNT" -ge "$TIMEOUT" ]; then
+        echo "minion_master.pub not detected by timeout"
+        exit 1
+    fi
+    sleep 5
+    COUNT=$((COUNT+5))
+done
+
+salt-call state.highstate -l debug
+update-ca-certificates 
+service docker restart
