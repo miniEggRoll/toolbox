@@ -1,0 +1,17 @@
+cat <<EOF > /etc/nginx/conf.d/kibana.conf
+server {
+ listen                80;
+ listen                ${ELASTICSEARCH_PORT};
+ server_name           ${KIBANA_DOMAIN};
+ access_log            /var/log/nginx/kibana.log;
+ location / {
+   root  /;
+   if (\$server_port = 80) {
+     proxy_pass http://${KIBANA_HOST}:${KIBANA_PORT};
+   } 
+   if (\$server_port != 80) {
+     proxy_pass http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT};
+   }
+ }
+}
+EOF

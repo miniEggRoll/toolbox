@@ -1,0 +1,8 @@
+#!/bin/bash
+for f in conf.d/*; do
+    source $f;
+done
+
+wait
+
+nginx

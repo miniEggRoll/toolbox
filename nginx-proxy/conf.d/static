@@ -1,0 +1,13 @@
+cat <<EOF > /etc/nginx/conf.d/static.conf
+
+server {
+ listen                80;
+ server_name           ${STATIC_DOMAIN};
+ access_log            /var/log/nginx/static.log;
+
+ location / {
+   proxy_pass http://${STATIC_HOST}:${STATIC_PORT}/;
+ }
+}
+
+EOF
